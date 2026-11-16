@@ -1,0 +1,27 @@
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "./firebase"; // path to your firebase.js file
+
+// 1. Handle Sign In (Email & Password)
+async function handleLogin(email, password) {
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        console.log("Logged in successfully:", userCredential.user);
+        window.location.href = '/'; // Redirect to main app
+    } catch (error) {
+        alert("Login failed: " + error.message);
+    }
+}
+
+// 2. Handle Forgot Password (Sends automated reset email)
+async function handleForgotPassword(email) {
+    if (!email) {
+        alert("Please enter your email address first!");
+        return;
+    }
+    try {
+        await sendPasswordResetEmail(auth, email);
+        alert("Password reset email sent! Check your inbox.");
+    } catch (error) {
+        alert("Error: " + error.message);
+    }
+}
