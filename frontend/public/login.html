@@ -1,27 +1,93 @@
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "./firebase"; // path to your firebase.js file
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AR Config</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f4f4f9; margin: 0; }
+        .login-card { background: white; padding: 2.5rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 380px; text-align: center; }
+        h2 { margin-top: 0; color: #333; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.2rem; text-align: left; }
+        label { display: block; margin-bottom: 0.5rem; color: #555; font-size: 14px; }
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        button { width: 100%; padding: 11px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: 500; margin-top: 0.5rem; }
+        button:hover { background: #0056b3; }
+        .extras { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; font-size: 13px; }
+        .extras a { color: #007bff; text-decoration: none; }
+        .extras a:hover { text-decoration: underline; }
+        .error { color: red; font-size: 13px; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>AR Config Login</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" required placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required placeholder="Enter your password">
+            </div>
+            <button type="submit">Sign In</button>
+            <div class="extras">
+                <a href="#" onclick="handleForgotPassword(event)">Forgot Password?</a>
+            </div>
+            <div id="errorMsg" class="error"></div>
+        </form>
+    </div>
 
-// 1. Handle Sign In (Email & Password)
-async function handleLogin(email, password) {
-    try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        console.log("Logged in successfully:", userCredential.user);
-        window.location.href = '/'; // Redirect to main app
-    } catch (error) {
-        alert("Login failed: " + error.message);
-    }
-}
+    <!-- Firebase SDK Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// 2. Handle Forgot Password (Sends automated reset email)
-async function handleForgotPassword(email) {
-    if (!email) {
-        alert("Please enter your email address first!");
-        return;
-    }
-    try {
-        await sendPasswordResetEmail(auth, email);
-        alert("Password reset email sent! Check your inbox.");
-    } catch (error) {
-        alert("Error: " + error.message);
-    }
-}
+        // Use your configuration details from firebase.js
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Handle Form Submission / Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // Success! Set a local token and redirect to the ArConfig dashboard page
+                localStorage.setItem('isAuthenticated', 'true');
+                window.location.href = '/dashboard'; 
+            } catch (error) {
+                document.getElementById('errorMsg').innerText = error.message;
+            }
+        });
+
+        // Handle Forgot Password
+        window.handleForgotPassword = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            if (!email) {
+                alert('Please enter your email address first.');
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert('Password reset link sent to your email!');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        };
+    </script>
+</body>
+</html>
